@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+
+{% block title %}
+注册
+{% endblock %}
+
+{% block head %}
+    <script src="{% static 'js/register.js' %}"></script>
+{% endblock %}
+
+{% block content %}
+<div class="col-md-6 offset-md-3 m-auto">
+    <h2>注册</h2>
+    <form method="post" action="{% url 'blog:register' %}">
+        {% csrf_token %}
+        <div class="mb-3">
+            <label for="username" class="form-label">用户名</label>
+            <input type="text" class="form-control" id="username" name="username" required>
+        </div>
+        <div class="mb-3">
+            <label for="email" class="form-label">邮箱</label>
+            <input type="text" class="form-control" id="email" name="email" required>
+        </div>
+        <div class="mb-3">
+            <label for="email" class="form-label">验证码</label>
+            <div class="input-group mb-3">
+                <input type="text" class="form-control" id="captcha" name="captcha" placeholder="请输入验证码" aria-label="get-captcha">
+                <button class="btn btn-outline-secondary" type="button" id="get-captcha-btn">获取验证码</button>
+            </div>
+        </div>
+        <div class="mb-3">
+            <label for="password" class="form-label">密码</label>
+            <input type="password" class="form-control" id="password" name="password" required>
+        </div>
+        <div class="mb-3">
+            <button type="submit" class="btn btn-primary w-100" >注册</button>
+        </div>
+    </form>
+</div>
+{% endblock %}

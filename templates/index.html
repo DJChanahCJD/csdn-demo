@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+
+{% block title %}
+首页
+{% endblock %}
+
+{% block content %}
+<h1>博客列表</h1>
+<div class="row row-cols-2 gap-4">
+    {% for blog in blogs %}
+    <div class="card" style="max-width: 48%;">
+        <div class="card-header">
+            <a href="{% url 'blog:blog_detail' blog_id=blog.id %}">{{ blog.title }}</a>
+        </div>
+        <div class="card-body" style="min-height: 100px;">
+            {{ blog.content|striptags|truncatechars:200 }}
+        </div>
+        <div class="card-footer text-body-secondary d-flex justify-content-between">
+            <span>
+                <img src="{{ blog.author.profile.avatarUrl }}" alt="avatar" class="rounded-circle" width="30" height="30">
+                <span>{{ blog.author.username }}</span>
+            </span>
+            <span>{{ blog.pub_time }}</span>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

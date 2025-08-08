@@ -1,0 +1,62 @@
+{% extends 'base.html' %}
+
+{% block title %}
+{{ blog.title }}
+{% endblock %}
+
+{% block head %}
+{#	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/styles/default.min.css">#}
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/styles/github-dark.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/highlight.min.js"></script>
+
+    <!-- and it's easy to individually load additional languages -->
+{#    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/languages/go.min.js"></script>#}
+{% endblock %}
+
+{% block content %}
+<h1>{{ blog.title }}</h1>
+<div class="blog-meta d-flex justify-content-between text-secondary">
+    <span>
+        <img src="{{ blog.author.profile.avatarUrl }}" alt="avatar" class="rounded-circle" width="30" height="30">
+        <span>{{ blog.author.username }}</span>
+    </span>
+    <span>{{ blog.pub_time }}</span>
+</div>
+<hr>
+<div class="blog-content my-4">
+    {{ blog.content|safe }}
+</div>
+<hr>
+<div class="blog-comments">
+    <h2>评论（{{ blog.comments.all|length }}）</h2>
+    <form action="{% url 'blog:pub_comment' %}" method="post">
+        {% csrf_token %}
+        <input type="hidden" name="blog_id" value="{{ blog.id }}">
+        <div class="mb-3">
+            <textarea class="form-control" id="comment" name="content" rows="3" placeholder="请输入评论内容"></textarea>
+        </div>
+        <div class="text-end">
+            <button type="submit" class="btn btn-primary">提交评论</button>
+        </div>
+    </form>
+    <hr>
+    <div class="mt-4 gap-3">
+        <ul class="list-group list-group-flush">
+            {% for comment in blog.comments.all %}
+                <li class="list-group-item">
+                    <div class="d-flex justify-content-between text-secondary">
+                        <div>
+                            <img src="{{ comment.author.profile.avatarUrl }}" alt="avatar" class="rounded-circle" width="30"
+                                height="30">
+                            <span>{{ comment.author.username }}</span>
+                        </div>
+                        <span>{{ comment.pub_time }}</span>
+                    </div>
+                    <p>{{ comment.content }}</p>
+                </li>
+            {% endfor %}
+        </ul>
+    </div>
+</div>
+<script>hljs.highlightAll();</script>
+{% endblock %}

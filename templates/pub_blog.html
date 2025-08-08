@@ -1,0 +1,42 @@
+{% extends 'base.html' %}
+
+{% block title %}
+    发布博客
+{% endblock %}
+
+{% block head %}
+    <link href="https://unpkg.com/@wangeditor/editor@latest/dist/css/style.css" rel="stylesheet">
+    <script src="https://unpkg.com/@wangeditor/editor@latest/dist/index.js"></script>
+    <link rel="stylesheet" href="{% static 'css/pub_blog.css' %}">
+    <script src="{% static 'js/pub_blog.js' %}"></script>
+{% endblock %}
+
+{% block content %}
+    <h1>发布博客</h1>
+    <form method="post" action="">
+        {% csrf_token %}
+        <div class="mb-3">
+            <label for="title" class="form-label">标题</label>
+            <input type="text" class="form-control" id="title" name="title" required>
+        </div>
+        <div class="mb-3">
+            <label for="category" class="form-label">分类</label>
+            <select class="form-select" id="category" name="category" required>
+                <option value="">请选择分类</option>
+                {% for category in categories %}
+                    <option value="{{ category.id }}">{{ category.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="mb-3">
+            <label for="content" class="form-label" id="content">内容</label>
+            <div id="editor—wrapper">
+                <div id="toolbar-container"><!-- 工具栏 --></div>
+                <div id="editor-container"><!-- 编辑器 --></div>
+            </div>
+        </div>
+        <div class="text-end">
+            <button type="submit" class="btn btn-primary" id="submit-btn">发布博客</button>
+        </div>
+    </form>
+{% endblock %}

@@ -1,0 +1,51 @@
+body {
+    background-color: #eee !important;
+}
+.nav-link:hover {
+  color: var(--bs-primary) !important;
+}
+
+/* Messages样式 */
+.messages-container {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 1050;
+    width: 300px;
+}
+
+.message-item {
+    margin-bottom: 10px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    border-radius: 8px;
+    opacity: 1;
+    transition: opacity 0.3s ease-out, transform 0.3s ease-out;
+    transform: translateX(0);
+    /* 蓝白色系样式 */
+    background-color: #e3f2fd;
+    color: #0d47a1;
+    border: 1px solid #bbdefb;
+}
+
+.message-item.alert-success {
+    background-color: #e8f5e9;
+    color: #1b5e20;
+    border-color: #c8e6c9;
+}
+
+.message-item.alert-warning {
+    background-color: #fff8e1;
+    color: #f57f17;
+    border-color: #ffecb3;
+}
+
+.message-item.alert-error, .message-item.alert-danger {
+    background-color: #ffebee;
+    color: #b71c1c;
+    border-color: #ffcdd2;
+}
+
+.message-item.hide {
+    opacity: 0;
+    transform: translateX(100%);
+}
