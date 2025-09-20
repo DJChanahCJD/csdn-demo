@@ -1,5 +1,6 @@
 # CSDN-demo
 这是一个Django学习项目，构建了一个仿CSDN的简易博客系统，使用了Bootstrap框架进行前端页面的设计和布局。
+<img width="1827" height="955" alt="image" src="https://github.com/user-attachments/assets/76eb7bcc-4f08-4143-a1ae-9c81d65eea79" />
 
 ## 技术栈
 - 后端：Django
