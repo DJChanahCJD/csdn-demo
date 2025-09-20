@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+
+{% block title %}
+{{ user.username }}的粉丝
+{% endblock %}
+
+{% block content %}
+<h2>{{ user.username }}的粉丝</h2>
+<span class="text-end">
+    <a href="{% url 'user:my' %}?user_id={{ user.id }}">返回</a>
+</span>
+<hr>
+    {% for follower in followers %}
+        <a href="{% url 'user:my' %}?user_id={{ follower.follower.id }}">
+            <img src="{{ follower.follower.profile.avatarUrl }}" alt="avatar" class="rounded-circle" width="30" height="30">
+            {{ follower.follower.username }}
+        </a>
+    {% empty %}
+    <p>暂无粉丝</p>
+    {% endfor %}
+{% endblock %}

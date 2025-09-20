@@ -1,5 +1,7 @@
 from django.contrib.auth import get_user_model
 from django.db import models
+from django.db.models import Q, F, CheckConstraint
+from common.role import ROLE_CHOICES, Role
 
 User = get_user_model()
 
@@ -12,7 +14,7 @@ class Blog(models.Model):
     content = models.TextField()
     pub_time = models.DateTimeField(auto_now_add=True)
     category = models.ForeignKey(Category, on_delete=models.CASCADE)
-    author = models.ForeignKey(User, on_delete=models.CASCADE)
+    author = models.ForeignKey(User, related_name='blogs', on_delete=models.CASCADE)
 
     class Meta:
         ordering = ['-pub_time']
@@ -30,6 +32,4 @@ class Comment(models.Model):
 class UserProfile(models.Model):
     user = models.OneToOneField(User, related_name='profile', on_delete=models.CASCADE)
     avatarUrl = models.CharField(max_length=1024, blank=True)
-
-
-
+    role = models.IntegerField(choices=ROLE_CHOICES, default=Role.DEVELOPER)

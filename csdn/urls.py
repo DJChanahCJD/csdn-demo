@@ -19,8 +19,27 @@ from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
 
+from rest_framework.routers import DefaultRouter
+from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
+from blog.api_views import BlogViewSet, CommentViewSet, CategoryViewSet
+from blog import views as blog_views, api_views as blog_api_views
+
+router = DefaultRouter()
+router.register('blogs', BlogViewSet)
+router.register('comments', CommentViewSet)
+router.register('categories', CategoryViewSet)
+
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
+path('admin/', admin.site.urls),
+path('', blog_views.index, name='index'),
     path('', include('blog.urls')),
+    path('user/', include('user.urls')),
+    path('api/', include(router.urls)),
+    path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
+    path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
+    path('api/custom-login/', blog_api_views.custom_login, name='custom_login'),
 ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT) + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+
+urlpatterns += router.urls
+handler404 = blog_views.page_not_found

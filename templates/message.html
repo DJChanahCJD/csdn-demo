@@ -1,0 +1,88 @@
+{% extends 'base.html' %}
+
+{% block title %}
+推送
+{% endblock %}
+
+{% block content %}
+<h1>推送列表</h1>
+<div class="row gap-4" id="blog-container">
+    {% for blog in blogs %}
+    <div class="card" id="blog-{{ blog.id }}">
+        <div class="card-header">
+            <a href="{% url 'blog:blog_detail' blog_id=blog.id %}">{{ blog.title }}</a>
+        </div>
+        <div class="card-body" style="min-height: 100px;">
+            {{ blog.content|striptags|truncatechars:200 }}
+        </div>
+        <div class="card-footer text-body-secondary d-flex justify-content-between">
+            <span>
+                <img src="{{ blog.author.profile.avatarUrl }}" alt="avatar" class="rounded-circle" width="30"
+                    height="30">
+                <span>{{ blog.author.username }}</span>
+            </span>
+            <span>{{ blog.pub_time }}</span>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<script>
+    // 建立WebSocket连接
+    const userId = "{{ request.user.id }}";
+    if (userId && userId !== "None") {
+        const protocol = 'ws:';
+        const socket = new WebSocket(`${protocol}//${window.location.host}/ws/message/${userId}/`);
+
+
+        // 连接打开时的处理
+        socket.onopen = function (e) {
+            console.log('WebSocket连接已建立');
+        };
+
+        // 接收消息时的处理
+        socket.onmessage = function (e) {
+            const data = JSON.parse(e.data);
+            // 创建新的博客卡片
+            const blogContainer = document.getElementById('blog-container');
+            const newCard = document.createElement('div');
+            newCard.className = 'card';
+            newCard.id = `blog-${data.id}`;
+
+            // 构造卡片内容
+            newCard.innerHTML = `
+                <div class="card-header">
+                    <a href="/blog/${data.id}/">${data.title}</a>
+                </div>
+                <div class="card-body" style="min-height: 100px;">
+                    ${data.content.replace(/<[^>]*>/g, '').substring(0, 200)}
+                </div>
+                <div class="card-footer text-body-secondary d-flex justify-content-between">
+                    <span>
+                        <img src="${data.author.avatarUrl}" alt="avatar" class="rounded-circle" width="30" height="30">
+                        <span>${data.author.username}</span>
+                    </span>
+                    <span>${data.pub_time}</span>
+                </div>
+            `;
+
+            // 将新卡片插入到容器的开头
+            blogContainer.insertBefore(newCard, blogContainer.firstChild);
+
+            console.log('收到新博客推送:', data);
+        };
+
+        // 连接关闭时的处理
+        socket.onclose = function (e) {
+            console.log('WebSocket连接已关闭');
+        };
+
+        // 连接错误时的处理
+        socket.onerror = function (e) {
+            console.error('WebSocket错误:', e);
+        };
+    } else {
+        console.log('用户未登录，不建立WebSocket连接');
+    }
+</script>
+{% endblock %}

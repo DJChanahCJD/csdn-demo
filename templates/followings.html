@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+
+{% block title %}
+{{ user.username }}的关注
+{% endblock %}
+
+{% block content %}
+<h2>{{ user.username }}的关注</h2>
+<span class="text-end">
+    <a href="{% url 'user:my' %}?user_id={{ user.id }}">返回</a>
+</span>
+<hr>
+    {% for following in followings %}
+        <a href="{% url 'user:my' %}?user_id={{ following.followed.id }}">
+            <img src="{{ following.followed.profile.avatarUrl }}" alt="avatar" class="rounded-circle" width="30" height="30">
+            {{ following.followed.username }}
+        </a>
+    {% empty %}
+    <p>暂无关注</p>
+    {% endfor %}
+{% endblock %}

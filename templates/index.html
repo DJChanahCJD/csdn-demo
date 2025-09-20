@@ -1,28 +1,229 @@
-{% extends 'base.html' %}
-
-{% block title %}
-首页
-{% endblock %}
-
-{% block content %}
-<h1>博客列表</h1>
-<div class="row row-cols-2 gap-4">
-    {% for blog in blogs %}
-    <div class="card" style="max-width: 48%;">
-        <div class="card-header">
-            <a href="{% url 'blog:blog_detail' blog_id=blog.id %}">{{ blog.title }}</a>
-        </div>
-        <div class="card-body" style="min-height: 100px;">
-            {{ blog.content|striptags|truncatechars:200 }}
-        </div>
-        <div class="card-footer text-body-secondary d-flex justify-content-between">
-            <span>
-                <img src="{{ blog.author.profile.avatarUrl }}" alt="avatar" class="rounded-circle" width="30" height="30">
-                <span>{{ blog.author.username }}</span>
-            </span>
-            <span>{{ blog.pub_time }}</span>
-        </div>
-    </div>
-    {% endfor %}
+{% extends 'base.html' %} {% block title %} 首页 {% endblock %}
+{% block content%}
+<div class="d-flex justify-content-between align-items-center">
+  <h1 class="mb-4">博客列表</h1>
+  <span>
+    <select class="form-select" id="category" name="category">
+      <option value="">请选择分类</option>
+      <!-- 选项将由 JS 填充 -->
+    </select>
+  </span>
 </div>
+
+<div id="blog-list" class="row row-cols-2 gap-4">
+  <div id="loading">加载中...</div>
+</div>
+
+<script>
+  $(document).ready(function () {
+    const $categoryEl = $("#category");
+    const $listEl = $("#blog-list");
+    const $loadingEl = $("#loading");
+    
+    // 添加分页相关变量
+    let currentPage = 1;
+    let totalPages = 1;
+    let totalItems = 0;
+    let currentCategoryId = '';
+    
+    // 添加分页控件容器
+    $listEl.after('<div id="pagination" class="d-flex justify-content-center mt-4"></div>');
+    const $paginationEl = $("#pagination");
+
+    function formatDate(s) {
+      try {
+        return new Date(s).toLocaleString();
+      } catch {
+        return "";
+      }
+    }
+
+    function cardHtml(b) {
+      const avatar = b.author_avatar || "/static/img/avatar.jpg";
+      const detailUrl = "/blog/" + b.id + "/";
+      const categoryName =
+        b.category_name || (b.category && b.category.name) || "";
+      const authorName = b.author_username || b.author || "";
+      return `
+                <div class="card" style="max-width:48%;">
+                    <div class="card-header">
+                        <a href="${detailUrl}">${b.title}</a>
+                    </div>
+                    <div class="card-body" style="min-height:100px;">
+                        ${(b.content || "")
+                          .replace(/<[^>]*>/g, "")
+                          .slice(0, 200)}
+                    </div>
+                    <div class="card-footer text-body-secondary d-flex justify-content-between">
+                        <a href="{% url 'user:my' %}?user_name=${authorName}">
+                            <img src="${avatar}" alt="avatar" class="rounded-circle" width="30" height="30">
+                            <span>${authorName}</span>
+                        </a>
+                        <span>
+                            <span>${formatDate(b.pub_time)}</span>
+                            <span class="badge bg-primary" style="margin-left:10px;">${categoryName}</span>
+                        </span>
+                    </div>
+                </div>
+            `;
+    }
+
+    function renderBlogs(items) {
+      if (!items || items.length === 0) {
+        $listEl.html('<div class="text-muted">暂无数据</div>');
+        return;
+      }
+      $listEl.html(items.map(cardHtml).join(""));
+    }
+    
+    // 渲染分页控件
+    function renderPagination() {
+        if (totalPages <= 1) {
+            $paginationEl.empty();
+            return;
+        }
+        
+        let paginationHtml = '<nav aria-label="Page navigation"><ul class="pagination">';
+        
+        // 上一页
+        if (currentPage > 1) {
+            paginationHtml += `<li class="page-item"><a class="page-link" href="#" data-page="${currentPage - 1}">上一页</a></li>`;
+        } else {
+            paginationHtml += '<li class="page-item disabled"><span class="page-link">上一页</span></li>';
+        }
+        
+        // 页码
+        // 计算显示的页码范围
+        let startPage = Math.max(1, currentPage - 2);
+        let endPage = Math.min(totalPages, currentPage + 2);
+        
+        // 确保显示5个页码
+        if (endPage - startPage < 4) {
+            if (startPage === 1) {
+                endPage = Math.min(totalPages, startPage + 4);
+            } else {
+                startPage = Math.max(1, endPage - 4);
+            }
+        }
+        
+        // 第一页
+        if (startPage > 1) {
+            paginationHtml += `<li class="page-item"><a class="page-link" href="#" data-page="1">1</a></li>`;
+            if (startPage > 2) {
+                paginationHtml += '<li class="page-item disabled"><span class="page-link">...</span></li>';
+            }
+        }
+        
+        // 中间页码
+        for (let i = startPage; i <= endPage; i++) {
+            if (i === currentPage) {
+                paginationHtml += `<li class="page-item active"><span class="page-link">${i}</span></li>`;
+            } else {
+                paginationHtml += `<li class="page-item"><a class="page-link" href="#" data-page="${i}">${i}</a></li>`;
+            }
+        }
+        
+        // 最后一页
+        if (endPage < totalPages) {
+            if (endPage < totalPages - 1) {
+                paginationHtml += '<li class="page-item disabled"><span class="page-link">...</span></li>';
+            }
+            paginationHtml += `<li class="page-item"><a class="page-link" href="#" data-page="${totalPages}">${totalPages}</a></li>`;
+        }
+        
+        // 下一页
+        if (currentPage < totalPages) {
+            paginationHtml += `<li class="page-item"><a class="page-link" href="#" data-page="${currentPage + 1}">下一页</a></li>`;
+        } else {
+            paginationHtml += '<li class="page-item disabled"><span class="page-link">下一页</span></li>';
+        }
+        
+        paginationHtml += '</ul></nav>';
+        
+        // 显示总页数和当前页数
+        paginationHtml += `<div class="text-muted text-center mt-2">共 ${totalItems} 条记录，第 ${currentPage} 页，共 ${totalPages} 页</div>`;
+        
+        $paginationEl.html(paginationHtml);
+        
+        // 绑定分页点击事件
+        $paginationEl.find('.page-link').on('click', function(e) {
+            e.preventDefault();
+            const page = $(this).data('page');
+            if (page) {
+                loadBlogs(currentCategoryId, page);
+            }
+        });
+    }
+
+    function loadCategories() {
+      return $.getJSON("/api/categories/")
+        .done(function (data) {
+          const items = Array.isArray(data) ? data : data.results || [];
+          $categoryEl.html(
+            '<option value="">请选择分类</option>' +
+              items
+                .map((c) => `<option value="${c.id}">${c.name}</option>`)
+                .join("")
+          );
+        })
+        .fail(function () {
+          console.error("Failed to load categories");
+        });
+    }
+
+    function loadBlogs(categoryId, page = 1) {
+      $loadingEl.show();
+      currentCategoryId = categoryId;
+      currentPage = page;
+      
+      // 构建URL，添加分页参数
+      let url = categoryId
+        ? "/api/blogs/by-category/?category_id=" +
+          encodeURIComponent(categoryId) + "&page=" + page
+        : "/api/blogs/?page=" + page;
+
+      $.get({
+        url: url,
+        dataType: "json",
+        headers: {
+            'Accept': 'application/json',
+        },
+      })
+        .done(function (data) {
+          // 检查是否是分页响应
+          if (data.results) {
+            // 分页响应
+            renderBlogs(data.results);
+            // 更新分页信息
+            totalItems = data.count;
+            totalPages = Math.ceil(totalItems / 4); // 每页4条记录
+            // 渲染分页控件
+            renderPagination();
+          } else {
+            // 非分页响应
+            renderBlogs(data);
+            // 隐藏分页控件
+            $paginationEl.empty();
+          }
+        })
+        .fail(function (jqXHR, textStatus, errorThrown) {
+          $listEl.html(
+            '<div class="text-danger">加载失败：' + errorThrown + "</div>"
+          );
+        })
+        .always(function () {
+          $loadingEl.hide();
+        });
+    }
+
+    $categoryEl.on("change", function () {
+      loadBlogs($(this).val(), 1); // 切换分类时重置到第一页
+    });
+
+    // 初始化：加载分类 + 全量博客
+    loadCategories().then(function () {
+        loadBlogs('', 1);
+    });
+  });
+</script>
 {% endblock %}

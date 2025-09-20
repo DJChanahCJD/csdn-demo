@@ -1,7 +1,7 @@
 from django import forms
 from django.contrib.auth import get_user_model
 from django.core.cache import cache
-from common.cache import cacheKey
+from common.cache import CacheKey
 
 User = get_user_model()
 
@@ -26,7 +26,7 @@ class RegisterForm(forms.Form):
     def clean_captcha(self):
         captcha = self.cleaned_data.get('captcha')
         email = self.cleaned_data.get('email')
-        cache_captcha = cache.get(cacheKey.EMAIL_CAPTCHA%email)
+        cache_captcha = cache.get(CacheKey.EMAIL_CAPTCHA % email)
         if not cache_captcha:
             raise forms.ValidationError('验证码过期')
         if str(cache_captcha) != str(captcha):

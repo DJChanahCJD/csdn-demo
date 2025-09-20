@@ -1,0 +1,44 @@
+{% extends 'base.html' %}
+
+{% block title %}
+{{ user.username }}的主页
+{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between">
+    <span>
+        <img src="{{ user.profile.avatarUrl }}" alt="avatar" class="rounded-circle" width="30" height="30">
+        <span class="fw-bold">{{ user.username }}</span>
+    </span>
+    <span>
+        <a class="badge bg-primary" href="{% url 'user:get_followers' %}?user_id={{ user.id }}">粉丝 {{ user.followers.count }}</a>
+        <a class="badge bg-info" href="{% url 'user:get_followings' %}?user_id={{ user.id }}">关注 {{ user.following.count }}</a>
+        {# 如果访问的不是自己，显示关注/已关注按钮 #}
+        {% if user.id != request.user.id %}
+        {% if already_follow %}
+        <a href="{% url 'user:unfollow' %}?user_id={{ user.id }}" class="btn btn-danger">取关</a>
+        {% else %}
+        <a href="{% url 'user:follow' %}?user_id={{ user.id }}" class="btn btn-primary">关注</a>
+        {% endif %}
+        {% endif %}
+    </span>
+</div>
+<hr>
+<div class="row row-cols-2 gap-4">
+    {% for blog in user.blogs.all %}
+    <div class="card" style="max-width: 48%;">
+        <div class="card-header">
+            <a href="{% url 'blog:blog_detail' blog_id=blog.id %}">{{ blog.title }}</a>
+        </div>
+        <div class="card-body" style="min-height: 100px;">
+            {{ blog.content|striptags|truncatechars:200 }}
+        </div>
+        <div class="card-footer text-body-secondary text-end">
+            <span>{{ blog.pub_time }}</span>
+        </div>
+    </div>
+    {% empty %}
+    <p>暂无博客</p>
+    {% endfor %}
+</div>
+{% endblock %}
