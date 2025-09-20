@@ -30,6 +30,7 @@ python manage.py makemigrations
 python manage.py migrate
 python manage.py createsuperuser
 ```
+> 邮箱配置：将`.env`中邮箱配置修改为自己的
 
 ### 3. 启动服务
 ```bash
