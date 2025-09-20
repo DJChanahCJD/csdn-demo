@@ -5,17 +5,108 @@
 {% endblock %}
 
 {% block content %}
-<h2>{{ user.username }}的关注</h2>
-<span class="text-end">
-    <a href="{% url 'user:my' %}?user_id={{ user.id }}">返回</a>
-</span>
-<hr>
-    {% for following in followings %}
-        <a href="{% url 'user:my' %}?user_id={{ following.followed.id }}">
-            <img src="{{ following.followed.profile.avatarUrl }}" alt="avatar" class="rounded-circle" width="30" height="30">
-            {{ following.followed.username }}
-        </a>
-    {% empty %}
-    <p>暂无关注</p>
-    {% endfor %}
+<div class="container-fluid py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card shadow-lg border-0 rounded-4 overflow-hidden">
+                <div class="card-header bg-gradient-primary text-white p-4">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h2 class="mb-1 fw-bold">
+                                <i class="fas fa-users me-2"></i>
+                                {{ user.username }}的关注
+                            </h2>
+                            <p class="mb-0 opacity-75">正在关注 {{ followings|length }} 个用户</p>
+                        </div>
+                        <a href="{% url 'user:my' %}?user_id={{ user.id }}" 
+                           class="btn btn-light btn-sm rounded-pill px-3">
+                            <i class="fas fa-arrow-left me-1"></i>返回
+                        </a>
+                    </div>
+                </div>
+                
+                <div class="card-body p-4">
+                    {% for following in followings %}
+                    <div class="user-card mb-3 p-3 rounded-3 border-0 shadow-sm bg-light-subtle" 
+                         data-aos="fade-up" data-aos-delay="{{ forloop.counter0|add:100 }}">
+                        <a href="{% url 'user:my' %}?user_id={{ following.followed.id }}" 
+                           class="text-decoration-none">
+                            <div class="d-flex align-items-center">
+                                <div class="avatar-wrapper me-3">
+                                    <img src="{{ following.followed.profile.avatarUrl }}" 
+                                         alt="avatar" 
+                                         class="rounded-circle shadow-sm user-avatar" 
+                                         width="50" height="50">
+                                </div>
+                                <div class="user-info">
+                                    <h6 class="mb-1 fw-bold text-dark">{{ following.followed.username }}</h6>
+                                    <small class="text-muted">
+                                        <i class="fas fa-user-friends me-1"></i>
+                                        {{ following.followed.followers.count }} 粉丝
+                                    </small>
+                                </div>
+                                <div class="ms-auto">
+                                    <i class="fas fa-chevron-right text-muted"></i>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+                    {% empty %}
+                    <div class="text-center py-5" data-aos="fade-up">
+                        <div class="empty-state">
+                            <i class="fas fa-user-plus fa-3x text-muted mb-3"></i>
+                            <h5 class="text-muted">暂无关注</h5>
+                            <p class="text-muted">还没有关注任何用户</p>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 添加自定义样式 -->
+<style>
+.user-card {
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.user-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.1) !important;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+}
+
+.user-card:hover .text-dark {
+    color: white !important;
+}
+
+.user-card:hover .text-muted {
+    color: rgba(255,255,255,0.8) !important;
+}
+
+.user-avatar {
+    transition: transform 0.3s ease;
+}
+
+.user-card:hover .user-avatar {
+    transform: scale(1.1);
+}
+
+.bg-gradient-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.empty-state i {
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0% { opacity: 0.6; }
+    50% { opacity: 1; }
+    100% { opacity: 0.6; }
+}
+</style>
 {% endblock %}

@@ -5,58 +5,297 @@
 {% endblock %}
 
 {% block head %}
-{#	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/styles/default.min.css">#}
-	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/styles/github-dark.min.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/highlight.min.js"></script>
-
-    <!-- and it's easy to individually load additional languages -->
-{#    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/languages/go.min.js"></script>#}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/styles/github-dark.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/highlight.min.js"></script>
 {% endblock %}
 
 {% block content %}
-<h1>{{ blog.title }}</h1>
-<div class="blog-meta d-flex justify-content-between text-secondary">
-    <span>
-        <img src="{{ blog.author.profile.avatarUrl }}" alt="avatar" class="rounded-circle" width="30" height="30">
-        <span>{{ blog.author.username }}</span>
-    </span>
-    <span>{{ blog.pub_time }}</span>
-</div>
-<hr>
-<div class="blog-content my-4">
-    {{ blog.content|safe }}
-</div>
-<hr>
-<div class="blog-comments">
-    <h2>评论（{{ blog.comments.all|length }}）</h2>
-    <form action="{% url 'blog:pub_comment' %}" method="post">
-        {% csrf_token %}
-        <input type="hidden" name="blog_id" value="{{ blog.id }}">
-        <div class="mb-3">
-            <textarea class="form-control" id="comment" name="content" rows="3" placeholder="请输入评论内容"></textarea>
+<article class="blog-article" data-aos="fade-up">
+    <!-- 文章头部 -->
+    <header class="article-header mb-5">
+        <h1 class="article-title display-4 fw-bold text-primary mb-4">{{ blog.title }}</h1>
+        <div class="article-meta d-flex justify-content-between align-items-center p-4 rounded-3" style="background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);">
+            <div class="author-info d-flex align-items-center">
+                <img src="{{ blog.author.profile.avatarUrl }}" alt="avatar" class="rounded-circle me-3 author-avatar" width="50" height="50">
+                <div>
+                    <h6 class="mb-0 fw-bold text-dark">{{ blog.author.username }}</h6>
+                    <small class="text-muted">
+                        <i class="fas fa-calendar-alt me-1"></i>{{ blog.pub_time }}
+                    </small>
+                </div>
+            </div>
+            <div class="article-actions">
+                <button class="btn btn-outline-primary btn-sm me-2" onclick="likeArticle()">
+                    <i class="fas fa-heart me-1"></i>点赞
+                </button>
+                <button class="btn btn-outline-secondary btn-sm me-2" onclick="shareArticle()">
+                    <i class="fas fa-share me-1"></i>分享
+                </button>
+                <button class="btn btn-outline-info btn-sm" onclick="collectArticle()">
+                    <i class="fas fa-bookmark me-1"></i>收藏
+                </button>
+            </div>
         </div>
-        <div class="text-end">
-            <button type="submit" class="btn btn-primary">提交评论</button>
+    </header>
+
+    <!-- 文章内容 -->
+    <div class="article-content mb-5" data-aos="fade-up" data-aos-delay="200">
+        <div class="content-wrapper p-4 rounded-3 bg-white shadow-sm">
+            {{ blog.content|safe }}
         </div>
-    </form>
-    <hr>
-    <div class="mt-4 gap-3">
-        <ul class="list-group list-group-flush">
-            {% for comment in blog.comments.all %}
-                <li class="list-group-item">
-                    <div class="d-flex justify-content-between text-secondary">
-                        <div>
-                            <img src="{{ comment.author.profile.avatarUrl }}" alt="avatar" class="rounded-circle" width="30"
-                                height="30">
-                            <span>{{ comment.author.username }}</span>
-                        </div>
-                        <span>{{ comment.pub_time }}</span>
-                    </div>
-                    <p>{{ comment.content }}</p>
-                </li>
-            {% endfor %}
-        </ul>
     </div>
-</div>
-<script>hljs.highlightAll();</script>
+
+    <!-- 评论区 -->
+    <section class="comments-section" data-aos="fade-up" data-aos-delay="400">
+        <div class="comments-header d-flex justify-content-between align-items-center mb-4">
+            <h2 class="h3 fw-bold text-dark">
+                <i class="fas fa-comments me-2 text-primary"></i>
+                评论区 <span class="badge bg-primary">{{ blog.comments.all|length }}</span>
+            </h2>
+        </div>
+
+        <!-- 评论表单 -->
+        <div class="comment-form-wrapper mb-5">
+            <form action="{% url 'blog:pub_comment' %}" method="post" class="comment-form">
+                {% csrf_token %}
+                <input type="hidden" name="blog_id" value="{{ blog.id }}">
+                <div class="form-floating mb-3">
+                    <textarea class="form-control" id="comment" name="content" rows="4" placeholder="分享您的想法..." style="min-height: 120px;" required></textarea>
+                    <label for="comment">
+                        <i class="fas fa-edit me-2"></i>分享您的想法...
+                    </label>
+                </div>
+                <div class="text-end">
+                    <button type="submit" class="btn btn-primary btn-lg comment-submit-btn">
+                        <i class="fas fa-paper-plane me-2"></i>发表评论
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- 评论列表 -->
+        <div class="comments-list">
+            {% for comment in blog.comments.all %}
+                <div class="comment-item mb-4 p-4 rounded-3 bg-light" data-aos="fade-up" data-aos-delay="{{ forloop.counter|add:100 }}">
+                    <div class="comment-header d-flex justify-content-between align-items-start mb-3">
+                        <div class="commenter-info d-flex align-items-center">
+                            <img src="{{ comment.author.profile.avatarUrl }}" alt="avatar" class="rounded-circle me-3 commenter-avatar" width="40" height="40">
+                            <div>
+                                <h6 class="mb-0 fw-bold text-dark">{{ comment.author.username }}</h6>
+                                <small class="text-muted">
+                                    <i class="fas fa-clock me-1"></i>{{ comment.pub_time }}
+                                </small>
+                            </div>
+                        </div>
+                        <div class="comment-actions">
+                            <button class="btn btn-sm btn-outline-primary" onclick="replyComment({{ comment.id }})">
+                                <i class="fas fa-reply me-1"></i>回复
+                            </button>
+                        </div>
+                    </div>
+                    <div class="comment-content">
+                        <p class="mb-0 text-dark">{{ comment.content }}</p>
+                    </div>
+                </div>
+            {% empty %}
+                <div class="no-comments text-center py-5">
+                    <i class="fas fa-comment-slash text-muted" style="font-size: 3rem;"></i>
+                    <h4 class="text-muted mt-3">暂无评论</h4>
+                    <p class="text-muted">成为第一个评论的人吧！</p>
+                </div>
+            {% endfor %}
+        </div>
+    </section>
+</article>
+
+<style>
+.blog-article {
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+.article-title {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    line-height: 1.2;
+}
+
+.author-avatar, .commenter-avatar {
+    border: 3px solid white;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+}
+
+.author-avatar:hover, .commenter-avatar:hover {
+    transform: scale(1.1);
+}
+
+.article-actions .btn {
+    border-radius: 25px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.article-actions .btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2);
+}
+
+.content-wrapper {
+    border-left: 4px solid #667eea;
+    font-size: 1.1rem;
+    line-height: 1.8;
+}
+
+.content-wrapper h1, .content-wrapper h2, .content-wrapper h3 {
+    color: #2d3748;
+    margin-top: 2rem;
+    margin-bottom: 1rem;
+}
+
+.content-wrapper p {
+    margin-bottom: 1.5rem;
+    color: #4a5568;
+}
+
+.content-wrapper pre {
+    background: #1a202c;
+    border-radius: 10px;
+    padding: 1.5rem;
+    margin: 1.5rem 0;
+    overflow-x: auto;
+}
+
+.content-wrapper code {
+    background: #edf2f7;
+    padding: 0.2rem 0.4rem;
+    border-radius: 4px;
+    font-size: 0.9em;
+    color: #e53e3e;
+}
+
+.content-wrapper pre code {
+    background: transparent;
+    padding: 0;
+    color: #e2e8f0;
+}
+
+.comment-form .form-control {
+    border: 2px solid #e2e8f0;
+    border-radius: 15px;
+    transition: all 0.3s ease;
+}
+
+.comment-form .form-control:focus {
+    border-color: #667eea;
+    box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+    transform: translateY(-2px);
+}
+
+.comment-submit-btn {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border: none;
+    border-radius: 25px;
+    padding: 0.75rem 2rem;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.comment-submit-btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 15px 30px rgba(102, 126, 234, 0.4);
+}
+
+.comment-item {
+    border-left: 4px solid #667eea;
+    transition: all 0.3s ease;
+}
+
+.comment-item:hover {
+    transform: translateX(5px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+}
+
+.no-comments {
+    background: linear-gradient(135deg, #f7fafc 0%, #edf2f7 100%);
+    border-radius: 20px;
+    border: 2px dashed #cbd5e0;
+}
+
+@media (max-width: 768px) {
+    .article-meta {
+        flex-direction: column;
+        gap: 1rem;
+    }
+    
+    .article-actions {
+        width: 100%;
+        display: flex;
+        justify-content: center;
+        gap: 0.5rem;
+    }
+}
+</style>
+
+<script>
+// 代码高亮
+hljs.highlightAll();
+
+// 文章操作函数
+function likeArticle() {
+    // 这里添加点赞逻辑
+    const btn = event.target.closest('button');
+    btn.innerHTML = '<i class="fas fa-heart me-1 text-danger"></i>已点赞';
+    btn.classList.remove('btn-outline-primary');
+    btn.classList.add('btn-primary');
+}
+
+function shareArticle() {
+    // 分享功能
+    if (navigator.share) {
+        navigator.share({
+            title: '{{ blog.title }}',
+            url: window.location.href
+        });
+    } else {
+        // 复制链接到剪贴板
+        navigator.clipboard.writeText(window.location.href).then(() => {
+            alert('链接已复制到剪贴板！');
+        });
+    }
+}
+
+function collectArticle() {
+    // 收藏功能
+    const btn = event.target.closest('button');
+    btn.innerHTML = '<i class="fas fa-bookmark me-1 text-warning"></i>已收藏';
+    btn.classList.remove('btn-outline-info');
+    btn.classList.add('btn-info');
+}
+
+function replyComment(commentId) {
+    // 回复评论功能
+    const textarea = document.getElementById('comment');
+    textarea.focus();
+    textarea.value = `@回复评论${commentId}: `;
+}
+
+// 表单提交处理
+$(document).ready(function() {
+    $('.comment-form').on('submit', function() {
+        const $btn = $('.comment-submit-btn');
+        const originalText = $btn.html();
+        
+        $btn.html('<span class="spinner-border spinner-border-sm me-2"></span>发表中...');
+        $btn.prop('disabled', true);
+        
+        setTimeout(() => {
+            $btn.html(originalText);
+            $btn.prop('disabled', false);
+        }, 2000);
+    });
+});
+</script>
 {% endblock %}

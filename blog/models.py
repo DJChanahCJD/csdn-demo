@@ -32,4 +32,4 @@ class Comment(models.Model):
 class UserProfile(models.Model):
     user = models.OneToOneField(User, related_name='profile', on_delete=models.CASCADE)
     avatarUrl = models.CharField(max_length=1024, blank=True)
-    role = models.IntegerField(choices=ROLE_CHOICES, default=Role.DEVELOPER)
+    role = models.IntegerField(choices=ROLE_CHOICES, default=Role.User)

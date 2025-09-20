@@ -23,14 +23,15 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-kp-&ye3tcuej*imd9zqm9z-4efxj-bp9a9$6_ec9u^oii7hv58'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True   # 开发环境可设置为True，若设置为False可能Django会无法加载静态文件
-ALLOWED_HOSTS = ['localhost','127.0.0.1']
+DEBUG = False   # 开发环境可设置为True，若设置为False可能Django会无法加载静态文件
+# 在开发模式下Django会显示详细的错误页面而不是自定义404页面
+ALLOWED_HOSTS = ['localhost','127.0.0.1', '0.0.0.0']
 
 
 # Application definition
 
 INSTALLED_APPS = [
-    'daphne',
+    'daphne',   # ASGI服务器（支持 WebSocket、HTTP2 等异步协议）
     'channels',
     'django.contrib.admin',
     'django.contrib.auth',
@@ -175,6 +176,8 @@ STATIC_URL = 'static/'
 STATICFILES_DIRS = [
     BASE_DIR / "static",
 ]
+STATIC_ROOT = BASE_DIR / 'staticfile'
+# python manage.py collectstatic # 在部署前需要运行以下命令收集静态文件
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'

@@ -18,6 +18,7 @@ from django.contrib import admin
 from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
+from django.views.static import serve
 
 from rest_framework.routers import DefaultRouter
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
@@ -29,7 +30,6 @@ router.register('blogs', BlogViewSet)
 router.register('comments', CommentViewSet)
 router.register('categories', CategoryViewSet)
 
-
 urlpatterns = [
 path('admin/', admin.site.urls),
 path('', blog_views.index, name='index'),
@@ -39,6 +39,7 @@ path('', blog_views.index, name='index'),
     path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('api/custom-login/', blog_api_views.custom_login, name='custom_login'),
+    path('static/<path:path>', serve, {'document_root': settings.STATIC_ROOT}),
 ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT) + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
 urlpatterns += router.urls

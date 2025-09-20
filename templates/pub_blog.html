@@ -12,31 +12,200 @@
 {% endblock %}
 
 {% block content %}
-    <h1>发布博客</h1>
-    <form method="post" action="">
-        {% csrf_token %}
-        <div class="mb-3">
-            <label for="title" class="form-label">标题</label>
-            <input type="text" class="form-control" id="title" name="title" required>
-        </div>
-        <div class="mb-3">
-            <label for="category" class="form-label">分类</label>
-            <select class="form-select" id="category" name="category" required>
-                <option value="">请选择分类</option>
-                {% for category in categories %}
-                    <option value="{{ category.id }}">{{ category.name }}</option>
-                {% endfor %}
-            </select>
-        </div>
-        <div class="mb-3">
-            <label for="content" class="form-label" id="content">内容</label>
-            <div id="editor—wrapper">
-                <div id="toolbar-container"><!-- 工具栏 --></div>
-                <div id="editor-container"><!-- 编辑器 --></div>
+<div class="container-fluid py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <div class="card shadow-lg border-0 rounded-4">
+                <div class="card-body p-5">
+                    <form method="post" action="" class="pub-blog-form" data-aos="fade-up">
+                        {% csrf_token %}
+                        
+                        <div class="mb-4">
+                            <label for="title" class="form-label fw-bold text-dark mb-3">
+                                <i class="fas fa-heading me-2 text-primary"></i>
+                                博客标题
+                            </label>
+                            <input type="text" 
+                                   class="form-control form-control-lg rounded-3 border-2" 
+                                   id="title" 
+                                   name="title" 
+                                   placeholder="输入一个吸引人的标题..." 
+                                   required>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label for="category" class="form-label fw-bold text-dark mb-3">
+                                <i class="fas fa-tags me-2 text-success"></i>
+                                文章分类
+                            </label>
+                            <select class="form-select form-select-lg rounded-3 border-2" 
+                                    id="category" 
+                                    name="category" 
+                                    required>
+                                <option value="">请选择分类</option>
+                                {% for category in categories %}
+                                    <option value="{{ category.id }}">{{ category.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label for="content" class="form-label fw-bold text-dark mb-3" id="content">
+                                <i class="fas fa-edit me-2 text-info"></i>
+                                文章内容
+                            </label>
+                            <div class="editor-container rounded-3 border-2 overflow-hidden shadow-sm">
+                                <div id="editor—wrapper">
+                                    <div id="toolbar-container" class="bg-light border-bottom"></div>
+                                    <div id="editor-container" style="min-height: 400px; padding: 20px;"></div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="text-center pt-3">
+                            <button type="submit" 
+                                    class="btn btn-primary btn-lg rounded-pill px-5 py-3 fw-bold" 
+                                    id="submit-btn">
+                                <i class="fas fa-paper-plane me-2"></i>
+                                发布博客
+                                <span class="spinner-border spinner-border-sm ms-2 d-none" id="submit-spinner"></span>
+                            </button>
+                            <p class="text-muted mt-3 mb-0">
+                                <i class="fas fa-info-circle me-1"></i>
+                                发布后，你的博客将会推送给所有关注你的用户
+                            </p>
+                        </div>
+                    </form>
+                </div>
             </div>
         </div>
-        <div class="text-end">
-            <button type="submit" class="btn btn-primary" id="submit-btn">发布博客</button>
-        </div>
-    </form>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // 表单提交处理
+    const form = document.querySelector('.pub-blog-form');
+    const submitBtn = document.getElementById('submit-btn');
+    const spinner = document.getElementById('submit-spinner');
+    
+    form.addEventListener('submit', function(e) {
+        // 显示加载状态
+        submitBtn.disabled = true;
+        spinner.classList.remove('d-none');
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>发布中...';
+    });
+    
+    // 输入验证
+    const titleInput = document.getElementById('title');
+    const categorySelect = document.getElementById('category');
+    
+    function validateForm() {
+        const isValid = titleInput.value.trim() && categorySelect.value;
+        submitBtn.disabled = !isValid;
+        
+        if (isValid) {
+            submitBtn.classList.remove('btn-secondary');
+            submitBtn.classList.add('btn-primary');
+        } else {
+            submitBtn.classList.remove('btn-primary');
+            submitBtn.classList.add('btn-secondary');
+        }
+    }
+    
+    titleInput.addEventListener('input', validateForm);
+    categorySelect.addEventListener('change', validateForm);
+    
+    // 初始验证
+    validateForm();
+});
+</script>
+
+
+<!-- 添加自定义样式和交互 -->
+<style>
+.bg-gradient-creative {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.form-control, .form-select {
+    transition: all 0.3s ease;
+    border-color: #e9ecef;
+}
+
+.form-control:focus, .form-select:focus {
+    border-color: #667eea;
+    box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+    transform: translateY(-1px);
+}
+
+.form-control:hover, .form-select:hover {
+    border-color: #667eea;
+}
+
+.editor-container {
+    transition: all 0.3s ease;
+    border-color: #e9ecef !important;
+}
+
+.editor-container:hover {
+    border-color: #667eea !important;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border: none;
+    transition: all 0.3s ease;
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
+    background: linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%);
+}
+
+.form-label {
+    font-size: 1.1rem;
+}
+
+.form-control::placeholder {
+    color: #adb5bd;
+    font-style: italic;
+}
+
+#submit-btn:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+    transform: none !important;
+}
+
+.card {
+    backdrop-filter: blur(10px);
+}
+
+/* 编辑器样式优化 */
+#toolbar-container {
+    padding: 10px 15px;
+}
+
+#editor-container {
+    background: #fafafa;
+}
+
+/* 响应式优化 */
+@media (max-width: 768px) {
+    .container-fluid {
+        padding: 2rem 1rem;
+    }
+    
+    .card-body {
+        padding: 2rem !important;
+    }
+    
+    .btn-lg {
+        padding: 0.75rem 2rem !important;
+    }
+}
+</style>
 {% endblock %}

@@ -32,7 +32,7 @@ class MessageConsumer(AsyncWebsocketConsumer):
         """
         断接WebSocket连接时的处理逻辑
         """
-        async_to_sync(self.channel_layer.group_discard)(
+        await self.channel_layer.group_discard(
             self.room_group_name, self.channel_name
         )
     

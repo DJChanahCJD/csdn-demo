@@ -4,70 +4,165 @@
 推送
 {% endblock %}
 
+{% block head %}
+<link rel="stylesheet" href="{% static 'css/message.css' %}">
+{% endblock %}
+
 {% block content %}
-<h1>推送列表</h1>
-<div class="row gap-4" id="blog-container">
-    {% for blog in blogs %}
-    <div class="card" id="blog-{{ blog.id }}">
-        <div class="card-header">
-            <a href="{% url 'blog:blog_detail' blog_id=blog.id %}">{{ blog.title }}</a>
-        </div>
-        <div class="card-body" style="min-height: 100px;">
-            {{ blog.content|striptags|truncatechars:200 }}
-        </div>
-        <div class="card-footer text-body-secondary d-flex justify-content-between">
-            <span>
-                <img src="{{ blog.author.profile.avatarUrl }}" alt="avatar" class="rounded-circle" width="30"
-                    height="30">
-                <span>{{ blog.author.username }}</span>
-            </span>
-            <span>{{ blog.pub_time }}</span>
+<div class="container-fluid py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card shadow-lg border-0 rounded-4 mb-4 overflow-hidden" data-aos="fade-down">
+                <div class="card-header bg-gradient-warning text-white p-4">
+                    <div class="d-flex align-items-center">
+                        <i class="fas fa-bell fa-2x me-3"></i>
+                        <div>
+                            <h2 class="mb-1 fw-bold">实时推送</h2>
+                            <p class="mb-0 opacity-75">关注用户的最新动态</p>
+                        </div>
+                        <div class="ms-auto">
+                            <div class="connection-status" id="connection-status">
+                                <span class="badge bg-light text-dark">
+                                    <i class="fas fa-circle text-success me-1"></i>已连接
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="blog-feed" id="blog-container">
+                {% for blog in blogs %}
+                <div class="card shadow-sm border-0 rounded-3 mb-4 blog-item" 
+                     id="blog-{{ blog.id }}" 
+                     data-aos="fade-up" 
+                     data-aos-delay="{{ forloop.counter0|add:100 }}">
+                    <div class="card-header bg-white border-0 p-4">
+                        <h5 class="mb-0 fw-bold">
+                            <a href="{% url 'blog:blog_detail' blog_id=blog.id %}" 
+                               class="text-decoration-none text-dark blog-title">
+                                {{ blog.title }}
+                            </a>
+                        </h5>
+                    </div>
+                    <div class="card-body p-4 pt-0">
+                        <p class="text-muted mb-0 blog-content">
+                            {{ blog.content|striptags|truncatechars:200 }}
+                        </p>
+                    </div>
+                    <div class="card-footer bg-transparent border-0 p-4 pt-0">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div class="d-flex align-items-center">
+                                <img src="{{ blog.author.profile.avatarUrl }}" 
+                                     alt="avatar" 
+                                     class="rounded-circle me-2 author-avatar" 
+                                     width="32" height="32">
+                                <div>
+                                    <small class="fw-bold text-dark">{{ blog.author.username }}</small>
+                                    <br>
+                                    <small class="text-muted">
+                                        <i class="fas fa-clock me-1"></i>
+                                        {{ blog.pub_time }}
+                                    </small>
+                                </div>
+                            </div>
+                            <a href="{% url 'blog:blog_detail' blog_id=blog.id %}" 
+                               class="btn btn-outline-primary btn-sm rounded-pill">
+                                阅读全文 <i class="fas fa-arrow-right ms-1"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+
+            <!-- 添加加载状态 -->
+            <div class="text-center py-4" id="loading-indicator" style="display: none;">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+                <p class="text-muted mt-2">正在加载新内容...</p>
+            </div>
         </div>
     </div>
-    {% endfor %}
 </div>
 
 <script>
     // 建立WebSocket连接
     const userId = "{{ request.user.id }}";
+    const connectionStatus = document.getElementById('connection-status');
+    
     if (userId && userId !== "None") {
         const protocol = 'ws:';
         const socket = new WebSocket(`${protocol}//${window.location.host}/ws/message/${userId}/`);
 
-
         // 连接打开时的处理
         socket.onopen = function (e) {
             console.log('WebSocket连接已建立');
+            connectionStatus.innerHTML = '<span class="badge bg-success"><i class="fas fa-circle me-1"></i>已连接</span>';
         };
 
         // 接收消息时的处理
         socket.onmessage = function (e) {
             const data = JSON.parse(e.data);
+            
+            // 显示新消息通知
+            showNewMessageNotification();
+            
             // 创建新的博客卡片
             const blogContainer = document.getElementById('blog-container');
             const newCard = document.createElement('div');
-            newCard.className = 'card';
+            newCard.className = 'card shadow-sm border-0 rounded-3 mb-4 blog-item new-blog';
             newCard.id = `blog-${data.id}`;
 
             // 构造卡片内容
             newCard.innerHTML = `
-                <div class="card-header">
-                    <a href="/blog/${data.id}/">${data.title}</a>
+                <div class="card-header bg-white border-0 p-4">
+                    <div class="d-flex align-items-center">
+                        <span class="badge bg-success me-2 pulse">新</span>
+                        <h5 class="mb-0 fw-bold">
+                            <a href="/blog/${data.id}/" class="text-decoration-none text-dark blog-title">
+                                ${data.title}
+                            </a>
+                        </h5>
+                    </div>
                 </div>
-                <div class="card-body" style="min-height: 100px;">
-                    ${data.content.replace(/<[^>]*>/g, '').substring(0, 200)}
+                <div class="card-body p-4 pt-0">
+                    <p class="text-muted mb-0 blog-content">
+                        ${data.content.replace(/<[^>]*>/g, '').substring(0, 200)}
+                    </p>
                 </div>
-                <div class="card-footer text-body-secondary d-flex justify-content-between">
-                    <span>
-                        <img src="${data.author.avatarUrl}" alt="avatar" class="rounded-circle" width="30" height="30">
-                        <span>${data.author.username}</span>
-                    </span>
-                    <span>${data.pub_time}</span>
+                <div class="card-footer bg-transparent border-0 p-4 pt-0">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div class="d-flex align-items-center">
+                            <img src="${data.author.avatarUrl}" alt="avatar" class="rounded-circle me-2 author-avatar" width="32" height="32">
+                            <div>
+                                <small class="fw-bold text-dark">${data.author.username}</small>
+                                <br>
+                                <small class="text-muted">
+                                    <i class="fas fa-clock me-1"></i>
+                                    ${data.pub_time}
+                                </small>
+                            </div>
+                        </div>
+                        <a href="/blog/${data.id}/" class="btn btn-outline-primary btn-sm rounded-pill">
+                            阅读全文 <i class="fas fa-arrow-right ms-1"></i>
+                        </a>
+                    </div>
                 </div>
             `;
 
             // 将新卡片插入到容器的开头
             blogContainer.insertBefore(newCard, blogContainer.firstChild);
+            
+            // 添加动画效果
+            newCard.style.opacity = '0';
+            newCard.style.transform = 'translateY(-20px)';
+            setTimeout(() => {
+                newCard.style.transition = 'all 0.5s ease';
+                newCard.style.opacity = '1';
+                newCard.style.transform = 'translateY(0)';
+            }, 100);
 
             console.log('收到新博客推送:', data);
         };
@@ -75,14 +170,40 @@
         // 连接关闭时的处理
         socket.onclose = function (e) {
             console.log('WebSocket连接已关闭');
+            connectionStatus.innerHTML = '<span class="badge bg-danger"><i class="fas fa-circle me-1"></i>已断开</span>';
         };
 
         // 连接错误时的处理
         socket.onerror = function (e) {
             console.error('WebSocket错误:', e);
+            connectionStatus.innerHTML = '<span class="badge bg-warning"><i class="fas fa-exclamation-triangle me-1"></i>连接错误</span>';
         };
     } else {
         console.log('用户未登录，不建立WebSocket连接');
+        connectionStatus.innerHTML = '<span class="badge bg-secondary"><i class="fas fa-user-slash me-1"></i>未登录</span>';
+    }
+
+    // 显示新消息通知
+    function showNewMessageNotification() {
+        // 创建通知元素
+        const notification = document.createElement('div');
+        notification.className = 'alert alert-success alert-dismissible fade show position-fixed';
+        notification.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+        notification.innerHTML = `
+            <i class="fas fa-bell me-2"></i>
+            收到新的博客推送！
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        `;
+        
+        document.body.appendChild(notification);
+        
+        // 3秒后自动移除
+        setTimeout(() => {
+            if (notification.parentNode) {
+                notification.remove();
+            }
+        }, 3000);
     }
 </script>
+
 {% endblock %}

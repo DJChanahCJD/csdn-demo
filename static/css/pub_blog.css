@@ -1,13 +1,80 @@
-#editor—wrapper {
-    border: 1px solid #ccc;
-    z-index: 100;
-    /* 按需定义 */
+/* 编辑器样式 */
+.editor-wrapper {
+    border: 1px solid #e0e0e0;
+    border-radius: var(--border-radius);
+    overflow: hidden;
+    box-shadow: var(--shadow-light);
+    margin-bottom: 1.5rem;
 }
 
 #toolbar-container {
-    border-bottom: 1px solid #ccc;
+    border-bottom: 1px solid #e0e0e0;
+    background-color: #f8f9fa;
+    padding: 0.5rem 1rem;
 }
 
 #editor-container {
     height: 500px;
+    background-color: white;
+}
+
+/* 编辑器表单样式 */
+.pub-blog-form .form-group {
+    margin-bottom: 1.5rem;
+}
+
+.pub-blog-form .form-label {
+    font-weight: 500;
+    color: var(--text-primary);
+    margin-bottom: 0.5rem;
+    display: block;
+}
+
+.pub-blog-form .form-control {
+    border-radius: var(--border-radius);
+    border: 1px solid #dee2e6;
+    padding: 0.75rem 1rem;
+    transition: all var(--transition-normal);
+}
+
+.pub-blog-form .form-control:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+.pub-blog-form .form-select {
+    border-radius: var(--border-radius);
+    border: 1px solid #dee2e6;
+    padding: 0.75rem 1rem;
+    transition: all var(--transition-normal);
+}
+
+.pub-blog-form .form-select:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+.pub-blog-form .btn-primary {
+    padding: 0.75rem 2rem;
+    font-weight: 500;
+    border: none;
+    background-color: var(--primary-color);
+    transition: all var(--transition-normal);
+}
+
+.pub-blog-form .btn-primary:hover {
+    background-color: #1565c0;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 123, 255, 0.3);
+}
+
+/* 响应式调整 */
+@media (max-width: 768px) {
+    #editor-container {
+        height: 400px;
+    }
+    
+    .pub-blog-form {
+        padding: 0 1rem;
+    }
 }

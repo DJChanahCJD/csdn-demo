@@ -1,83 +1,491 @@
 <!DOCTYPE html>
-<html lang="en">
-
-<head>
-    <meta charset="UTF-8">
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>{% block title %}{% endblock %} - CSDN</title>
-    <link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}">
-    <link rel="stylesheet" href="{% static 'css/base.css' %}">
-    <script src="{% static 'js/base.js' %}"></script>
-    <script src="{% static 'js/bootstrap.bundle.min.js' %}"></script>
     <script src="{% static 'js/jquery-3.7.1.min.js' %}"></script>
+    <script src="{% static 'js/bootstrap.bundle.min.js' %}"></script>
+    <script src="{% static 'js/base.js' %}"></script>
+    <!-- JavaScript -->
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+
+    <!-- 预加载字体 -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <!-- Bootstrap 5.3 -->
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+
+    <!-- Font Awesome 图标 -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+    />
+
+    <!-- AOS 动画库 -->
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet" />
+
     {% block head %}{% endblock %}
-</head>
+  </head>
 
-<body>
-    <input type="hidden" id="user_id" value="{{ request.user.id }}">
-    <header class="p-3 text-bg-light border-bottom mb-3">
-        <div class="container">
-            <div class="d-flex flex-wrap align-items-center justify-content-center justify-content-lg-start">
-                <a href="/" class="d-flex align-items-center mb-2 mb-lg-0 text-primary text-decoration-none">
-                    <span class="fs-4">CSDN</span>
-                </a>
+  <body>
+    <input type="hidden" id="user_id" value="{{ request.user.id }}" />
 
-                <ul class="nav col-12 col-lg-auto me-lg-auto mb-2 justify-content-center mb-md-0">
-                    <li><a href="/" class="nav-link px-2 text-secondary">主页</a></li>
-                    <li><a href="{% url 'blog:pub_blog' %}" class="nav-link px-2 text-secondary">发布博客</a></li>
-                </ul>
+    <!-- 导航栏 -->
+    <nav
+      class="navbar navbar-expand-lg navbar-custom fixed-top"
+      data-aos="fade-down"
+    >
+      <div class="container">
+        <a class="navbar-brand" href="/">
+          <i class="fas fa-blog me-2"></i>CSDN
+        </a>
 
-                <form class="col-12 col-lg-auto mb-3 mb-lg-0 me-lg-3" role="search" action="{% url 'blog:search_blog' %}">
-                    {% csrf_token %}
-                    <input type="search" class="form-control form-control-dark" placeholder="Search..."
-                        aria-label="Search" name="q">
-                </form>
-                
-                <span><a href="{% url 'blog:message' %}">消息</a></span>
-                <div class="text-end">
-                    {% if request.user.is_authenticated %}
-                        <div class="dropdown"> <a href="#"
-                                class="d-block link-body-emphasis text-decoration-none dropdown-toggle"
-                                data-bs-toggle="dropdown" aria-expanded="false">
-                                <img src="{{ request.user.profile.avatarUrl }}"
+        <button
+          class="navbar-toggler"
+          type="button"
+          data-bs-toggle="collapse"
+          data-bs-target="#navbarNav"
+        >
+          <span class="navbar-toggler-icon"></span>
+        </button>
 
-                                    width="32" height="32" class="rounded-circle"> </a>
-                            <ul class="dropdown-menu text-small" style="">
-                                <li><a class="dropdown-item" href="{% url 'user:my' %}?user_id={{ request.user.id }}">我的主页</a></li>
+        <div class="collapse navbar-collapse" id="navbarNav">
+          <ul class="navbar-nav me-auto">
+            <li class="nav-item">
+              <a class="nav-link" href="/">
+                <i class="fas fa-home me-1"></i>主页
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="{% url 'blog:pub_blog' %}">
+                <i class="fas fa-edit me-1"></i>发布博客
+              </a>
+            </li>
+          </ul>
 
-                                <li><hr class="dropdown-divider"></li>
-                                <li><a class="dropdown-item" href="{% url 'blog:logout' %}">退出登录</a></li>
-                            </ul>
-                        </div>
-                    {% else %}
-                            <a href="{% url 'blog:login' %}" type="button" class="btn btn-outline-primary me-2">登录</a>
-                            <a href="{% url 'blog:register' %}" type="button" class="btn btn-primary">注册</a>
-                    {% endif %}
-                </div>
-
+          <form
+            class="d-flex me-3 search-box"
+            role="search"
+            action="{% url 'blog:search_blog' %}"
+          >
+            {% csrf_token %}
+            <div class="input-group">
+              <span class="input-group-text bg-transparent border-0">
+                <i class="fas fa-search text-muted"></i>
+              </span>
+              <input
+                type="search"
+                class="form-control border-0"
+                placeholder="搜索博客..."
+                name="q"
+              />
             </div>
+          </form>
+
+          <a
+            href="{% url 'blog:message' %}"
+            class="btn btn-outline-primary btn-custom me-2"
+          >
+            <i class="fas fa-bell me-1"></i>消息
+          </a>
+
+          {% if request.user.is_authenticated %}
+          <div class="dropdown">
+            <a
+              href="#"
+              class="d-flex align-items-center text-decoration-none dropdown-toggle"
+              data-bs-toggle="dropdown"
+            >
+              <img
+                src="{{ request.user.profile.avatarUrl }}"
+                width="40"
+                height="40"
+                class="rounded-circle avatar-custom"
+              />
+            </a>
+            <ul class="dropdown-menu dropdown-menu-end dropdown-menu-custom">
+              <li>
+                <a
+                  class="dropdown-item"
+                  href="{% url 'user:my' %}?user_id={{ request.user.id }}"
+                >
+                  <i class="fas fa-user me-2"></i>我的主页
+                </a>
+              </li>
+              <li><hr class="dropdown-divider" /></li>
+              <li>
+                <a
+                  class="dropdown-item text-danger"
+                  href="{% url 'blog:logout' %}"
+                >
+                  <i class="fas fa-sign-out-alt me-2"></i>退出登录
+                </a>
+              </li>
+            </ul>
+          </div>
+          {% else %}
+          <a
+            href="{% url 'blog:login' %}"
+            class="btn btn-outline-primary btn-custom me-2"
+          >
+            <i class="fas fa-sign-in-alt me-1"></i>登录
+          </a>
+          <a
+            href="{% url 'blog:register' %}"
+            class="btn btn-primary btn-custom"
+          >
+            <i class="fas fa-user-plus me-1"></i>注册
+          </a>
+          {% endif %}
         </div>
-    </header>
-    <main>
-        <div class="container bg-white p-5 rounded">
-            {% block content %}{% endblock %}
+      </div>
+    </nav>
+
+    <!-- 主内容区 -->
+    <main style="margin-top: 100px">
+      <div class="container">
+        <div class="main-content fade-in" data-aos="fade-up">
+          <div class="p-4 p-md-5">{% block content %}{% endblock %}</div>
         </div>
+      </div>
     </main>
 
-    <!-- Messages container -->
-    <div id="messages-container" class="messages-container">
-        {% if messages %}
-        {% for message in messages %}
-        <div class="alert alert-{{ message.tags }} alert-dismissible fade show message-item" role="alert">
-            {{ message }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        </div>
-        {% endfor %}
-        {% endif %}
-    </div>
-</body>
-<script>
-    function getUserId() {
-      return $('#user_id').val();
+    <!-- 页脚 -->
+    <footer class="footer-custom py-4 mt-5" data-aos="fade-up">
+      <div class="container text-center">
+        <p class="mb-0">
+          <i class="fas fa-heart text-danger me-1"></i>
+          &copy; 2024 CSDN博客系统 - 学习项目
+        </p>
+      </div>
+    </footer>
+
+    <!-- 消息提示容器 -->
+    <div
+      id="messages-container"
+      class="position-fixed top-0 end-0 p-3"
+      style="z-index: 9999"
+    ></div>
+
+    <!-- 返回顶部按钮 -->
+    <button
+      id="backToTop"
+      class="btn btn-primary position-fixed bottom-0 end-0 m-4 rounded-circle"
+      style="display: none; z-index: 1000; width: 50px; height: 50px"
+    >
+      <i class="fas fa-arrow-up"></i>
+    </button>
+
+    <script>
+      // 初始化AOS动画
+      AOS.init({
+        duration: 800,
+        easing: "ease-in-out",
+        once: true,
+      });
+
+      // 返回顶部功能
+      $(window).scroll(function () {
+        if ($(this).scrollTop() > 300) {
+          $("#backToTop").fadeIn();
+        } else {
+          $("#backToTop").fadeOut();
+        }
+      });
+
+      $("#backToTop").click(function () {
+        $("html, body").animate({ scrollTop: 0 }, 600);
+        return false;
+      });
+
+      // 工具函数
+      function getUserId() {
+        return $("#user_id").val();
+      }
+
+      function initializeMessages() {
+        // 消息初始化逻辑
+      }
+
+      // 页面加载完成后初始化
+      $(document).ready(function () {
+        initializeMessages();
+
+        // 添加加载动画到按钮
+        $(".btn").on("click", function () {
+          const $btn = $(this);
+          const originalText = $btn.html();
+          $btn.html('<span class="loading-spinner me-2"></span>加载中...');
+
+          setTimeout(() => {
+            $btn.html(originalText);
+          }, 2000);
+        });
+      });
+    </script>
+
+    {% block scripts %}{% endblock %}
+  </body>
+
+  <!-- 自定义样式 -->
+  <style>
+    :root {
+      --primary-color: #2563eb;
+      --primary-dark: #1d4ed8;
+      --secondary-color: #64748b;
+      --success-color: #059669;
+      --warning-color: #d97706;
+      --danger-color: #dc2626;
+      --light-bg: #f8fafc;
+      --dark-bg: #0f172a;
+      --card-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1),
+        0 2px 4px -1px rgba(0, 0, 0, 0.06);
+      --card-shadow-hover: 0 20px 25px -5px rgba(0, 0, 0, 0.1),
+        0 10px 10px -5px rgba(0, 0, 0, 0.04);
     }
-</script>
+
+    * {
+      font-family: "Inter", "Noto Sans SC", -apple-system, BlinkMacSystemFont,
+        sans-serif;
+    }
+
+    body {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      line-height: 1.6;
+    }
+
+    .navbar-custom {
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    }
+
+    .navbar-brand {
+      font-weight: 700;
+      font-size: 1.5rem;
+      background: linear-gradient(45deg, var(--primary-color), #8b5cf6);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .nav-link {
+      font-weight: 500;
+      transition: all 0.3s ease;
+      position: relative;
+    }
+
+    .nav-link:hover {
+      color: var(--primary-color) !important;
+      transform: translateY(-1px);
+    }
+
+    .nav-link::after {
+      content: "";
+      position: absolute;
+      width: 0;
+      height: 2px;
+      bottom: -5px;
+      left: 50%;
+      background: var(--primary-color);
+      transition: all 0.3s ease;
+      transform: translateX(-50%);
+    }
+
+    .nav-link:hover::after {
+      width: 100%;
+    }
+
+    .search-box {
+      position: relative;
+      overflow: hidden;
+    }
+
+    .search-box input {
+      border: 2px solid transparent;
+      background: rgba(255, 255, 255, 0.9);
+      transition: all 0.3s ease;
+    }
+
+    .search-box input:focus {
+      border-color: var(--primary-color);
+      box-shadow: 0 0 0 0.2rem rgba(37, 99, 235, 0.25);
+      background: white;
+    }
+
+    .btn-custom {
+      font-weight: 500;
+      padding: 0.5rem 1.5rem;
+      border-radius: 50px;
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .btn-custom::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(
+        90deg,
+        transparent,
+        rgba(255, 255, 255, 0.2),
+        transparent
+      );
+      transition: left 0.5s;
+    }
+
+    .btn-custom:hover::before {
+      left: 100%;
+    }
+
+    .btn-custom:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+    }
+
+    .main-content {
+      background: white;
+      border-radius: 20px;
+      box-shadow: var(--card-shadow);
+      margin: 2rem 0;
+      overflow: hidden;
+    }
+
+    .card-custom {
+      border: none;
+      border-radius: 15px;
+      box-shadow: var(--card-shadow);
+      transition: all 0.3s ease;
+      overflow: hidden;
+      background: white;
+    }
+
+    .card-custom:hover {
+      transform: translateY(-5px);
+      box-shadow: var(--card-shadow-hover);
+    }
+
+    .card-header-custom {
+      background: linear-gradient(135deg, var(--primary-color), #8b5cf6);
+      color: white;
+      border: none;
+      padding: 1rem 1.5rem;
+    }
+
+    .card-header-custom a {
+      color: white;
+      text-decoration: none;
+      font-weight: 600;
+    }
+
+    .card-header-custom a:hover {
+      color: rgba(255, 255, 255, 0.9);
+    }
+
+    .avatar-custom {
+      border: 3px solid white;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+      transition: all 0.3s ease;
+    }
+
+    .avatar-custom:hover {
+      transform: scale(1.1);
+    }
+
+    .badge-custom {
+      font-weight: 500;
+      padding: 0.5rem 1rem;
+      border-radius: 50px;
+      text-decoration: none;
+      transition: all 0.3s ease;
+    }
+
+    .badge-custom:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    }
+
+    .footer-custom {
+      background: rgba(15, 23, 42, 0.9);
+      color: white;
+      backdrop-filter: blur(10px);
+    }
+
+    .dropdown-menu-custom {
+      border: none;
+      border-radius: 15px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+      backdrop-filter: blur(10px);
+      background: rgba(255, 255, 255, 0.95);
+    }
+
+    .dropdown-item:hover {
+      background: var(--primary-color);
+      color: white;
+      border-radius: 10px;
+      margin: 0 0.5rem;
+    }
+
+    .fade-in {
+      animation: fadeIn 0.6s ease-in;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .pulse {
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0% {
+        transform: scale(1);
+      }
+      50% {
+        transform: scale(1.05);
+      }
+      100% {
+        transform: scale(1);
+      }
+    }
+
+    .loading-spinner {
+      display: inline-block;
+      width: 20px;
+      height: 20px;
+      border: 3px solid rgba(255, 255, 255, 0.3);
+      border-radius: 50%;
+      border-top-color: white;
+      animation: spin 1s ease-in-out infinite;
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+  </style>
 </html>

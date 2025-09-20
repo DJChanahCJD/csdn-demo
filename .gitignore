@@ -2,5 +2,8 @@
 .trae/
 __pycache__/
 .cursor/
+.venv/
+staticfile/
+
 
 

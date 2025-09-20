@@ -3,25 +3,15 @@ from rest_framework.response import Response
 from rest_framework import status
 from functools import wraps
 
-
-
 class Role:
-
     ADMIN = 0
+    User = 1
 
-    DEVELOPER = 1
-
-    ENTERPRISE = 2
 
 
 ROLE_CHOICES = [
-
     (Role.ADMIN, 'Admin'),
-
-    (Role.DEVELOPER, 'Developer'),
-
-    (Role.ENTERPRISE, 'Enterprise')
-
+    (Role.User, 'User'),
 ]
 
 
