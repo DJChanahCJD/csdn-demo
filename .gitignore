@@ -4,6 +4,7 @@ __pycache__/
 .cursor/
 .venv/
 staticfile/
+.env
 
 
 

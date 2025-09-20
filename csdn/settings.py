@@ -189,9 +189,15 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 LOGIN_URL = '/auth/login'   # 默认登录URL
 
-EMAIL_HOST = 'smtp.qq.com'                  # TODO：SMTP服务器
-EMAIL_HOST_USER = 'djchan@foxmail.com'       # TODO：邮箱
-EMAIL_HOST_PASSWORD = 'iacbkdfhcuwudcji'     # TODO：授权码
-DEFAULT_FROM_EMAIL = 'djchan@foxmail.com'    # TODO：发件人邮箱
-EMAIL_PORT = 587
-EMAIL_USE_TLS = True
+# 邮箱配置 - 从环境变量读取
+import os
+from dotenv import load_dotenv
+# 加载环境变量
+load_dotenv()
+
+EMAIL_HOST = os.getenv('EMAIL_HOST', 'smtp.qq.com')                  # SMTP服务器
+EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER', 'djchan@foxmail.com')   # 邮箱
+EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD', '')             # 授权码（从环境变量获取）
+DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL', 'djchan@foxmail.com')  # 发件人邮箱
+EMAIL_PORT = int(os.getenv('EMAIL_PORT', 587))                         # 端口
+EMAIL_USE_TLS = os.getenv('EMAIL_USE_TLS', 'True').lower() == 'true'   # 使用TLS

@@ -198,6 +198,7 @@ def send_email_captcha(request):
     # 发送验证码（随机6位数字）, 存储String类型
     captcha = random.sample('0123456789', 6)
     captcha = ''.join(captcha)
+    print(email, captcha)
     # 将验证码存储到redis中, 并设置过期时间为5分钟
     cache.set(CacheKey.EMAIL_CAPTCHA % email, captcha, 60 * 5)
     # 异步发送邮件
